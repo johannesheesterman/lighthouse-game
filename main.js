@@ -180,19 +180,11 @@ const bulbMaterial = new THREE.MeshStandardMaterial({
     transparent: true,
     opacity: 0.9
 });
-const lightBulb = new THREE.Mesh(bulbGeometry, bulbMaterial);
-lightBulb.position.set(0, 12, 0);
-lightBulb.castShadow = true;
-scene.add(lightBulb);
 
 // Add a point light to enhance the glow effect
-const pointLight = new THREE.PointLight(0xffff00, 2, 10);
-pointLight.position.copy(lightBulb.position);
+const pointLight = new THREE.PointLight(0xffff00, 25, 10);
+pointLight.position.set(0, 1, 0);
 scene.add(pointLight);
-
-// Add a helper to visualize the spotlight (for debugging)
-const spotLightHelper = new THREE.SpotLightHelper(spotlight);
-scene.add(spotLightHelper);
 
 scene.add(spotlight);
 
@@ -781,7 +773,7 @@ function animate() {
         targetObject.position.y = 0;
 
         // Update the spotlight helper
-        spotLightHelper.update();
+        //spotLightHelper.update();
 
         // Update collectible visibility based on spotlight
         updateCollectibleVisibility();

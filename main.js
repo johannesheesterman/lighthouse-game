@@ -39,7 +39,7 @@ scene.add(ground);
 
 // Create obstacles
 const obstacles = [];
-const numObstacles = 20; // Number of obstacles to create
+const numObstacles = 40; // Increased from 20 to 40 obstacles
 
 function createObstacle(x, z, width, depth, height) {
     const geometry = new THREE.BoxGeometry(width, height, depth);
@@ -64,9 +64,9 @@ function createObstacle(x, z, width, depth, height) {
 for (let i = 0; i < numObstacles; i++) {
     const x = (Math.random() - 0.5) * 100; // Random position between -50 and 50
     const z = (Math.random() - 0.5) * 100;
-    const width = 1 + Math.random() * 3; // Random size between 1 and 4
-    const depth = 1 + Math.random() * 3;
-    const height = 1 + Math.random() * 2; // Random height between 1 and 3
+    const width = 1.5 + Math.random() * 4; // Increased minimum size from 1 to 1.5, max from 3 to 4
+    const depth = 1.5 + Math.random() * 4;
+    const height = 1.5 + Math.random() * 3; // Increased minimum height from 1 to 1.5, max from 2 to 3
     
     createObstacle(x, z, width, depth, height);
 }
@@ -341,7 +341,38 @@ gameOverDiv.style.fontFamily = 'Arial, sans-serif';
 gameOverDiv.style.fontSize = '48px';
 gameOverDiv.style.zIndex = '1000';
 gameOverDiv.style.display = 'none';
-gameOverDiv.textContent = 'GAME OVER';
+gameOverDiv.style.textAlign = 'center';
+
+// Create game over content
+gameOverDiv.innerHTML = `
+    <div style="margin-bottom: 20px;">GAME OVER</div>
+    <button id="gameOverRestartButton" style="
+        padding: 10px 20px;
+        font-size: 24px;
+        cursor: pointer;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        transition: transform 0.2s, background-color 0.2s;
+    ">Play Again</button>
+`;
+
+// Add hover effect to game over restart button
+const gameOverRestartButton = gameOverDiv.querySelector('#gameOverRestartButton');
+gameOverRestartButton.addEventListener('mouseover', () => {
+    gameOverRestartButton.style.transform = 'scale(1.1)';
+    gameOverRestartButton.style.backgroundColor = '#45a049';
+});
+gameOverRestartButton.addEventListener('mouseout', () => {
+    gameOverRestartButton.style.transform = 'scale(1)';
+    gameOverRestartButton.style.backgroundColor = '#4CAF50';
+});
+
+// Add click handler to game over restart button
+gameOverRestartButton.addEventListener('click', restartGame);
+
 document.body.appendChild(gameOverDiv);
 
 // Add victory screen display
@@ -486,6 +517,15 @@ function restartGame() {
     victoryDiv.style.display = 'none';
     healthDiv.style.color = 'white';
     currentTimeDiv.textContent = 'Time: 0:00';
+    
+    // Show title screen
+    titleDiv.style.display = 'block';
+    
+    // Hide game UI elements
+    scoreDiv.style.display = 'none';
+    healthDiv.style.display = 'none';
+    highScoreDiv.style.display = 'none';
+    currentTimeDiv.style.display = 'none';
     
     // Reset player position
     player.position.set(0, 0.5, 0);

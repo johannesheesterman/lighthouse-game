@@ -288,10 +288,11 @@ const gameState = {
     maxHealth: 100,
     isGameOver: false,
     isVictory: false,
-    orbsToDropOff: 0,  // Track orbs that need to be dropped off
+    isTitleScreen: true, // Add title screen state
+    orbsToDropOff: 0,
     startTime: Date.now(),
     endTime: null,
-    highScore: localStorage.getItem('highScore') || null // Changed from Infinity to null
+    highScore: localStorage.getItem('highScore') || null
 };
 window['gameState'] = gameState;
 
@@ -475,6 +476,7 @@ function restartGame() {
     gameState.health = 100;
     gameState.isGameOver = false;
     gameState.isVictory = false;
+    gameState.isTitleScreen = true;
     gameState.orbsToDropOff = 0;
     gameState.startTime = Date.now();
     gameState.endTime = null;
@@ -611,11 +613,52 @@ function updateCurrentTime() {
     }
 }
 
-// Animation loop
+// Add joystick controls
+let joystick = null;
+let joystickActive = false;
+let joystickAngle = 0;
+let joystickForce = 0;
+
+// Create joystick container
+const joystickContainer = document.createElement('div');
+joystickContainer.id = 'joystick';
+document.body.appendChild(joystickContainer);
+
+function createJoystick() {
+    const options = {
+        zone: document.getElementById('joystick'),
+        mode: 'static',
+        position: { left: '50px', bottom: '50px' },
+        color: 'white',
+        size: 120,
+        lockY: false
+    };
+
+    joystick = nipplejs.create(options);
+
+    joystick.on('start', () => {
+        joystickActive = true;
+    });
+
+    joystick.on('end', () => {
+        joystickActive = false;
+        joystickForce = 0;
+    });
+
+    joystick.on('move', (evt, data) => {
+        joystickAngle = data.angle.degree;
+        joystickForce = data.force;
+    });
+}
+
+// Initialize joystick
+createJoystick();
+
+// Modify the animation loop's movement section
 function animate() {
     requestAnimationFrame(animate);
 
-    if (!gameState.isGameOver && !gameState.isVictory) {
+    if (!gameState.isTitleScreen && !gameState.isGameOver && !gameState.isVictory) {
         // Handle player movement with collision detection
         const newX = player.position.x;
         const newZ = player.position.z;
@@ -625,19 +668,27 @@ function animate() {
         let dx = 0;
         let dz = 0;
 
-        if (keys.w) dz -= 1;
-        if (keys.s) dz += 1;
-        if (keys.a) dx -= 1;
-        if (keys.d) dx += 1;
-
-        // Normalize diagonal movement
-        if (dx !== 0 && dz !== 0) {
-            const length = Math.sqrt(dx * dx + dz * dz);
-            dx = (dx / length) * moveSpeed;
-            dz = (dz / length) * moveSpeed;
+        if (joystickActive && joystickForce > 0.5) {
+            // Convert angle to radians and calculate movement
+            const angleRad = ((joystickAngle - 90) * Math.PI) / 180;
+            dx = -Math.sin(angleRad) * moveSpeed;
+            dz = -Math.cos(angleRad) * moveSpeed;
         } else {
-            dx *= moveSpeed;
-            dz *= moveSpeed;
+            // Keyboard controls
+            if (keys.w) dz -= 1;
+            if (keys.s) dz += 1;
+            if (keys.a) dx -= 1;
+            if (keys.d) dx += 1;
+
+            // Normalize diagonal movement
+            if (dx !== 0 && dz !== 0) {
+                const length = Math.sqrt(dx * dx + dz * dz);
+                dx = (dx / length) * moveSpeed;
+                dz = (dz / length) * moveSpeed;
+            } else {
+                dx *= moveSpeed;
+                dz *= moveSpeed;
+            }
         }
 
         // Apply movement with collision detection
@@ -717,6 +768,68 @@ function onWindowResize() {
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
+
+// Add title screen display
+const titleDiv = document.createElement('div');
+titleDiv.style.position = 'absolute';
+titleDiv.style.top = '50%';
+titleDiv.style.left = '50%';
+titleDiv.style.transform = 'translate(-50%, -50%)';
+titleDiv.style.color = 'white';
+titleDiv.style.fontFamily = 'Arial, sans-serif';
+titleDiv.style.fontSize = '72px';
+titleDiv.style.zIndex = '1000';
+titleDiv.style.textAlign = 'center';
+titleDiv.style.textShadow = '2px 2px 4px rgba(0,0,0,0.5)';
+titleDiv.innerHTML = `
+    <div style="margin-bottom: 40px;">Lighthouse</div>
+    <button id="startButton" style="
+        padding: 15px 30px;
+        font-size: 24px;
+        cursor: pointer;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        transition: transform 0.2s, background-color 0.2s;
+    ">Start Game</button>
+`;
+
+// Add hover effect to start button
+const startButton = titleDiv.querySelector('#startButton');
+startButton.addEventListener('mouseover', () => {
+    startButton.style.transform = 'scale(1.1)';
+    startButton.style.backgroundColor = '#45a049';
+});
+startButton.addEventListener('mouseout', () => {
+    startButton.style.transform = 'scale(1)';
+    startButton.style.backgroundColor = '#4CAF50';
+});
+
+// Start game function
+function startGame() {
+    gameState.isTitleScreen = false;
+    gameState.startTime = Date.now();
+    titleDiv.style.display = 'none';
+    
+    // Show game UI elements
+    scoreDiv.style.display = 'block';
+    healthDiv.style.display = 'block';
+    highScoreDiv.style.display = 'block';
+    currentTimeDiv.style.display = 'block';
+}
+
+// Add click handler to start button
+startButton.addEventListener('click', startGame);
+
+document.body.appendChild(titleDiv);
+
+// Hide game UI elements initially
+scoreDiv.style.display = 'none';
+healthDiv.style.display = 'none';
+highScoreDiv.style.display = 'none';
+currentTimeDiv.style.display = 'none';
 
 // Start the animation
 animate(); 

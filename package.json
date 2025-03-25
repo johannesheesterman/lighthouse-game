@@ -1,16 +1,19 @@
 {
-  "name": "vibe-code-game",
-  "version": "1.0.0",
-  "description": "A game built with Three.js",
-  "main": "main.js",
+  "name": "lone-beacon",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
   "scripts": {
-    "start": "vite",
-    "build": "vite build"
-  },
-  "dependencies": {
-    "three": "^0.162.0"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
   },
   "devDependencies": {
-    "vite": "^5.1.4"
+    "typescript": "~5.7.2",
+    "vite": "^6.2.0"
+  },
+  "dependencies": {
+    "nipplejs": "^0.10.2",
+    "pixi.js": "^8.9.0"
   }
-} 
+}

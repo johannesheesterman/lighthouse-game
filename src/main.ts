@@ -33,7 +33,11 @@ const resize = () => {
     const windowHeight = window.innerHeight;
 
     // Calculate scale ratio to maintain aspect ratio
-    const scale = Math.min(windowWidth / GAME_WIDTH, windowHeight / GAME_HEIGHT);
+    let scale = Math.min(windowWidth / GAME_WIDTH, windowHeight / GAME_HEIGHT);
+
+    // Limit maximum scale on large screens to prevent pixelation
+    const maxScale = 2;
+    scale = Math.min(scale, maxScale);
 
     // Calculate centered position
     const newWidth = Math.round(GAME_WIDTH * scale);
@@ -47,6 +51,9 @@ const resize = () => {
     app.canvas.style.height = `${newHeight}px`;
     app.canvas.style.left = `${x}px`;
     app.canvas.style.top = `${y}px`;
+
+    // Add touch-action CSS to prevent unwanted scrolling/zooming on mobile
+    app.canvas.style.touchAction = 'none';
 };
 
 // Initial resize and add window listener
